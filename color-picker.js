@@ -1,3 +1,6 @@
+// 🔄 test commit: updating COLORPICKER BOI
+
+
 // Function to change the color of the icons and the active color indicator
 function changeIconColor(color, element) {
     // If an element was provided (i.e., a color item was clicked), update the active color indicator
