@@ -121,8 +121,42 @@ window.onmessage = (event) => {
 };
 });
 
-// Retrieve and set the initial theme from Figma plugin when the UI loads
-parent.postMessage({ pluginMessage: { type: 'request-theme' } }, '*');
-// -----------------------------------
 
 
+// CHANGE THEME COLOR
+
+function changeColorText(backgroundColor, textColor, button) {
+    // Get the current theme (dark or light)
+    var currentTheme = document.body.getAttribute('data-theme');
+
+    // Select all elements with the current theme
+    var themeElements = document.querySelectorAll(`[data-theme="${currentTheme}"]`);
+
+    // Update the --detail-A and --text-A variables within each of these elements
+    themeElements.forEach(function(elem) {
+        elem.style.setProperty('--detail-A', backgroundColor);
+        elem.style.setProperty('--text-A', textColor);
+    });
+
+    // Set active theme button
+    setActiveThemeButton(button);
+}
+
+
+function setActiveThemeButton(activeButton) {
+    // Remove 'active' class from all theme buttons
+    var buttons = document.querySelectorAll('.theme-button');
+    buttons.forEach(function(button) {
+        button.classList.remove('active');
+    });
+
+    // Add 'active' class to the clicked button
+    activeButton.classList.add('active');
+}
+
+
+// Example usage: changeColor('#666FFF'); // Changes the --detail-A color within the dark theme to #666FFF
+
+// Call this function with the new color when a button is clicked
+
+// -----------------------------------------
