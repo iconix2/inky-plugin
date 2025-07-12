@@ -3,9 +3,9 @@
 // 1. Define the HTML and CSS template for the component
 const loaderTemplate = `
   <style>
-    /* Scoped CSS for the custom element - loader styles */
-    /* :host targets the custom element itself (<loader>) */
-    :host {
+    /* Scoped CSS for the custom element */
+    /* Styles for the outermost container within the Shadow DOM */
+    #loaderContainer {
       position: fixed;
       top: 0;
       left: 0;
@@ -13,29 +13,28 @@ const loaderTemplate = `
       height: 100%;
       background-color: var(--main-000); /* Uses CSS variable from your main UI */
       z-index: 999;
-      display: flex; /* Initially set to flex for centering */
+      display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       opacity: 1;
-      transform: scale(1); /* initial scale */
       transition: opacity 0.5s ease, transform 0.5s ease;
+      transform: scale(1); /* initial scale */
       visibility: visible; /* Initially visible */
-      pointer-events: auto; /* Allow interactions (if any) */
+      pointer-events: auto; /* Allow interactions */
     }
 
     /* Styles for hiding/showing via JavaScript */
-    /* These classes will be toggled by the show() and hide() methods */
-    :host(.fade-out) {
+    /* These classes will be toggled by the show() and hide() methods on #loaderContainer */
+    .fade-out {
         opacity: 0;
         transform: scale(0.5);
         pointer-events: none; /* Disable interaction during fade-out */
     }
-    /* We don't need a .fade-in class as the default :host style is 'in' */
+    /* We don't need a .fade-in class as the default state of #loaderContainer is 'in' */
 
-    /* Hide content by default, this will ensure the main UI is hidden when loader is active */
-    /* Note: If .content is outside the loader component, this CSS cannot be scoped here. */
-    /* This rule might need to live in your main ui.css if .content is external. */
+    /* The .content rule needs to be in your main ui.css if it hides external content */
+    /* If you want the loader to hide other content inside the component, then apply it here to a wrapper */
     /* .content {
         display: none;
     } */
@@ -43,8 +42,8 @@ const loaderTemplate = `
     /* Icon and Text wrapper */
     .iconTextWrapper {
       display: flex;
-      align-items: center;  /* Vertically align to the center */
-      user-select: none; /* Prevent text selection */
+      align-items: center;
+      user-select: none;
       -webkit-user-select: none;
     }
 
@@ -54,14 +53,13 @@ const loaderTemplate = `
       font-weight: bold;
       font-size: 17px;
       letter-spacing: 0px;
-      color: var(--secondary-000); /* Use your existing color variable */
-      /* Note: You had --text-A in previous custom element, now back to original --secondary-000 */
+      color: var(--secondary-000);
     }
 
     /* Animation Wrapper */
     .animationWrapper {
       margin-top: 24px;
-      margin-right: -10px; /* From your original CSS */
+      margin-right: -10px;
       position: relative;
       width: 34px;
       height: 34px;
@@ -71,7 +69,7 @@ const loaderTemplate = `
     .circle, .square {
       position: absolute;
       opacity: 0.55;
-      background-color: var(--secondary-000); /* From your original CSS */
+      background-color: var(--secondary-000);
     }
 
     /* Circle specific */
@@ -80,7 +78,7 @@ const loaderTemplate = `
       height: 15px;
       border-radius: 8px;
       animation: slideCircle 2s ease-out infinite;
-      opacity: 0.35; /* From your original CSS */
+      opacity: 0.35;
     }
 
     /* Square specific */
@@ -137,50 +135,55 @@ const loaderTemplate = `
     }
   </style>
 
-  <div class="iconTextWrapper">
-    <div class="svgIcon">
-      <div class="animationWrapper">
-        <div class="circle"></div>
-        <div class="square"></div>
+  <div id="loaderContainer">
+    <div class="iconTextWrapper">
+      <div class="svgIcon">
+        <div class="animationWrapper">
+          <div class="circle"></div>
+          <div class="square"></div>
+        </div>
+      </div>
+      <div class="iconText">
+        Dynamix
       </div>
     </div>
-    <div class="iconText">
-      Dynamix
     </div>
-  </div>
 `;
 
 // 2. Define the Custom Element Class
-class LoaderComponent extends HTMLElement { // Renamed class to avoid conflict with `Loader` for clarity
+class LoaderComponent extends HTMLElement {
   constructor() {
     super();
 
     // Attach a shadow DOM to encapsulate styles and markup
     const shadowRoot = this.attachShadow({ mode: 'open' });
     shadowRoot.innerHTML = loaderTemplate;
+
+    // Get reference to the actual loader container within the shadow DOM
+    // This is the element we will manipulate for show/hide
+    this.loaderContainer = shadowRoot.getElementById('loaderContainer');
   }
 
   // Method to show the loader
   show() {
-    this.classList.remove('fade-out'); // Remove fade-out class
-    this.classList.add('fade-in');    // Add fade-in class (though not strictly needed if default is 'in')
-    this.style.display = 'flex';      // Ensure flex display for centering
-    this.style.visibility = 'visible'; // Make visible
-    this.style.pointerEvents = 'auto'; // Enable interactions
-    this.removeAttribute('hidden');    // Ensure hidden attribute is removed
+    this.loaderContainer.classList.remove('fade-out');
+    // No need to add 'fade-in' if default state is already 'in'
+    this.loaderContainer.style.display = 'flex';
+    this.loaderContainer.style.visibility = 'visible';
+    this.loaderContainer.style.pointerEvents = 'auto';
+    this.loaderContainer.removeAttribute('hidden');
   }
 
   // Method to hide the loader with a transition
   hide() {
-    this.classList.remove('fade-in'); // Remove fade-in class
-    this.classList.add('fade-out');   // Add fade-out class
-    this.style.pointerEvents = 'none'; // Disable interactions immediately
+    this.loaderContainer.classList.add('fade-out');
+    this.loaderContainer.style.pointerEvents = 'none';
 
     // After the transition completes, fully hide it from layout
     setTimeout(() => {
-      this.style.display = 'none';     // Hide the element from layout
-      this.style.visibility = 'hidden'; // Ensure it's not visible
-      this.setAttribute('hidden', ''); // Add hidden attribute for accessibility/layout
+      this.loaderContainer.style.display = 'none';
+      this.loaderContainer.style.visibility = 'hidden';
+      this.loaderContainer.setAttribute('hidden', '');
     }, 500); // Matches your CSS transition duration (0.5s)
   }
 
@@ -188,16 +191,15 @@ class LoaderComponent extends HTMLElement { // Renamed class to avoid conflict w
   connectedCallback() {
     this.show(); // Show the loader immediately when it's added to the page
 
-    // You can keep the automatic hide after 3 seconds here if it's the intended default behavior
-    // for every instance of the loader component.
-    // However, for a plugin, you might prefer to control hide/show from your main ui.js.
-    // If you want it to hide automatically only on initial plugin load, move this to ui.js.
+    // Automatically hide after 3 seconds, as per your original loader.js behavior
+    // If you want to control this externally (e.g., from ui.js after plugin loads),
+    // you would remove this setTimeout call from here.
     setTimeout(() => this.hide(), 3000);
   }
 
   // Optional: Clean up if component is ever removed from DOM
   disconnectedCallback() {
-    // Any cleanup if needed
+    // Any cleanup if needed (e.g., removing event listeners if they were attached to window/document)
   }
 }
 
