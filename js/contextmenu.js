@@ -1,16 +1,28 @@
+
 // contextmenu.js
+// ————————————————————————————————————————————————————————
+// Utility: attach all required listeners to an icon element.
+// Call this for the icons that exist at load time *and* any we
+// add later (e.g. favourites).
+function attachIconEventListeners(iconElement) {
+  // Context‑menu on right‑click
+  iconElement.addEventListener('contextmenu', function (event) {
+    showIconContextMenu(event, this);
+  });
+
+  // Hover tooltip (id ➞ data-fontname)
+  iconElement.addEventListener('mouseover', function () {
+    const fontName = this.id;
+    this.setAttribute('data-fontname', fontName);
+  });
+}
 
 
 // NOT SURE IF THIS IS PART OF IT?
 
-// Add event listeners to your icon elements
 document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.icon').forEach((iconElement) => {
-        iconElement.addEventListener('contextmenu', function(event) {
-            showIconContextMenu(event, this);
-        });
-    });
-    console.log('Event listeners added to icons');
+  document.querySelectorAll('.icon').forEach(attachIconEventListeners);
+  console.log('Event listeners added to icons');
 });
 
 // Function to toggle selection for a particular icon
@@ -28,18 +40,7 @@ function toggleIconSelection(iconElement) {
 
 
 
-// ICON HOVER TEXT
 
-
-document.querySelectorAll('.icon').forEach(icon => {
-  icon.addEventListener('mouseover', function() {
-    const fontName = this.id; // Get the id of the hovered icon
-    this.setAttribute('data-fontname', fontName); // Set the data-fontname attribute
-  });
-});
-
-
-//------------------------------------------------------
 
 
 
@@ -345,23 +346,28 @@ function addToFavorites(iconElement) {
 
   // Check if the icon is already in favorites
   if (!favoritesGrid.querySelector(`[data-id='${iconId}']`)) {
-    // Create a visual representation of the icon
-    const visualReplica = document.createElement('div');
-    visualReplica.classList.add('icon');
-    visualReplica.setAttribute('data-id', iconId);
-    visualReplica.innerHTML = iconElement.innerHTML; // Copy the inner HTML of the icon
+    // Clone the original icon node so we retain its SVG, attributes and
+    // draggable behaviour.
+    const clone = iconElement.cloneNode(true);
 
-       // Add animation class
-       iconElement.classList.add('favorite-added');
+    // Reset any runtime‑state classes
+    clone.classList.remove('icon--active', 'selected');
 
-// Optionally remove the class after animation completes
-setTimeout(() => {
-  iconElement.classList.remove('favorite-added');
-}, 500); // The duration here should match the animation duration
+    // Make sure the clone is draggable from the favourites grid
+    clone.setAttribute('draggable', 'true');
 
+    // Give the clone all the normal listeners
+    attachIconEventListeners(clone);
 
-    // Append the visual replica to the favorites grid
-    favoritesGrid.appendChild(visualReplica);
+    // Add the clone to the favourites grid
+    favoritesGrid.appendChild(clone);
+
+    // Add animation class
+    iconElement.classList.add('favorite-added');
+    // Optionally remove the class after animation completes
+    setTimeout(() => {
+      iconElement.classList.remove('favorite-added');
+    }, 500); // The duration here should match the animation duration
 
     // Add a red circle to the original icon to indicate it's a favorite
     if (!iconElement.querySelector('.favorite-indicator')) {
@@ -374,7 +380,6 @@ setTimeout(() => {
       redCircle.style.position = 'absolute';
       redCircle.style.top = '0';
       redCircle.style.right = '0';
-      
       iconElement.style.position = 'relative';
       iconElement.appendChild(redCircle);
     }
