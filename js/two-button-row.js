@@ -21,6 +21,8 @@ const twoButtonRowTemplate = `
       cursor: pointer;
       transition: background-color 0.2s ease, transform 0.1s ease;
       box-sizing: border-box; /* Include padding and border in button's size */
+      /* Important for Figma plugins to allow interaction and prevent dragging the whole plugin */
+      -webkit-app-region: no-drag;
     }
 
     .button-row-container button:active {
@@ -66,7 +68,7 @@ class TwoButtonRow extends HTMLElement {
   constructor() {
     super(); // Always call super() first in the constructor
 
-    // Attach a Shadow DOM to encapsulate styles and markup
+    // Attach a Shadow DOM to encapsulate styles and markup, preventing conflicts
     const shadowRoot = this.attachShadow({ mode: 'open' });
     shadowRoot.innerHTML = twoButtonRowTemplate;
 
@@ -75,7 +77,7 @@ class TwoButtonRow extends HTMLElement {
     this.cancelButton = shadowRoot.getElementById('cancel-btn');
 
     // Add event listeners for the buttons
-    // We'll use custom events to communicate with the outside world (your plugin's ui.js)
+    // Use custom events to communicate with the outside world (your plugin's ui.js)
     this.applyButton.addEventListener('click', () => {
       this.dispatchEvent(new CustomEvent('apply-clicked'));
     });
@@ -84,7 +86,7 @@ class TwoButtonRow extends HTMLElement {
       this.dispatchEvent(new CustomEvent('cancel-clicked'));
     });
 
-    // You could also add attributes to customize button text if needed
+    // Handle initial attribute values for button text
     if (this.hasAttribute('apply-text')) {
       this.applyButton.textContent = this.getAttribute('apply-text');
     }
@@ -93,11 +95,12 @@ class TwoButtonRow extends HTMLElement {
     }
   }
 
-  // Optional: Observed attributes for dynamic text changes
+  // Observe changes to 'apply-text' and 'cancel-text' attributes for dynamic updates
   static get observedAttributes() {
     return ['apply-text', 'cancel-text'];
   }
 
+  // Callback for when observed attributes change
   attributeChangedCallback(name, oldValue, newValue) {
     if (name === 'apply-text' && this.applyButton) {
       this.applyButton.textContent = newValue;
