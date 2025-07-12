@@ -7,18 +7,21 @@
 const loaderTemplate = `
   <style>
     :host {
-      position: fixed;
-      inset: 0;
-      z-index: 999;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      background: var(--main-000, #000);
-      opacity: 1;
-      transform: scale(1);
-      transition: opacity .5s ease, transform .5s ease;
-    }
+       position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--main-000);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  opacity: 1;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  transform: scale(1); /* initial scale */
+}
 
     .iconTextWrapper { display: flex; align-items: center; }
 
